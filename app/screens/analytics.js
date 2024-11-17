@@ -12,7 +12,7 @@ const AnalyticsPage = ({ navigation, route }) => {
 
     const fetchAssessmentData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/me/assessments');
+            const response = await fetch('http://localhost:9000/me/assessments');
             const data = await response.json();
             const { assessment } = data;
             setAssessmentData(assessment);

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 
-export default function Questions({navigation}) {
+export default function Questions({ route, navigation }) {
 
-  const testId= navigation.getParam("testId");
+  // const { testId } = route.params;
+  console.log(route.params);
   const questions = [
     {
       question: "When you see a long to-do list in the morning, how does it make you feel?",
@@ -59,7 +60,7 @@ export default function Questions({navigation}) {
 
   const nextQuestion = async() => {
 
-    const response = await fetch("http://localhost:3000/submit-answer", {
+    const response = await fetch("http://localhost:9000/submit-answer", {
 	  method: "POST",
 	  headers: {
 		"Content-Type": "application/json",
@@ -73,7 +74,7 @@ export default function Questions({navigation}) {
       setAnswer('');
     }
     else{
-        const response = await fetch(`http://localhost:3000/get-score/${testId}`, {
+        const response = await fetch(`http://localhost:9000/get-score/${testId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ export default function Questions({navigation}) {
         ))}
       </View>
 
-      <Button mode="contained" color="pink" onPress={nextQuestion} labelStyle={styles.buttonText}>
+      <Button mode="contained" textColor="pink" onPress={nextQuestion} labelStyle={styles.buttonText}>
         Submit
       </Button>
     </View>
