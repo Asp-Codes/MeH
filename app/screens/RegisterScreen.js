@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Text } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import an icon library
 
 import Background from "../components/Background";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import TextInput from "../components/TextInput";
-import BackButton from "../components/BackButton";
 import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
@@ -19,17 +19,16 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState({ value: "", error: "" });
   const [cnfPassword, setCnfPassword] = useState({ value: "", error: "" });
   const [image, setImage] = useState(null);
+  const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false); // State for confirm password visibility
 
   const pickImage = async () => {
-    // Request permission to access media library
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Permission to access camera roll is required!");
       return;
     }
 
-    // Launch the image picker
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       aspect: [1, 1],
@@ -73,7 +72,7 @@ export default function RegisterScreen({ navigation }) {
     });
 
     try {
-      const response = await fetch("http://your-backend-api-url/register", {
+      const response = await fetch("https://meh-production.up.railway.app/v1/register", {
         method: "POST",
         body: formData,
         headers: {
@@ -99,7 +98,6 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <Background>
-      <BackButton goBack={navigation.goBack} />
       <Header>Create Account</Header>
       <View style={styles.imagePickerContainer}>
         {image && <Image source={{ uri: image }} style={styles.image} />}
@@ -127,24 +125,48 @@ export default function RegisterScreen({ navigation }) {
         textContentType="emailAddress"
         keyboardType="email-address"
       />
-      <TextInput
-        label="Password"
-        returnKeyType="next"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: "" })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-      />
-      <TextInput
-        label="Confirm Password"
-        returnKeyType="done"
-        value={cnfPassword.value}
-        onChangeText={(text) => setCnfPassword({ value: text, error: "" })}
-        error={!!cnfPassword.error}
-        errorText={cnfPassword.error}
-        secureTextEntry
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          label="Password"
+          returnKeyType="next"
+          value={password.value}
+          onChangeText={(text) => setPassword({ value: text, error: "" })}
+          error={!!password.error}
+          errorText={password.error}
+          secureTextEntry={!passwordVisible} // Toggle visibility
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setPasswordVisible(!passwordVisible)}
+        >
+          <Icon
+            name={passwordVisible ? "visibility" : "visibility-off"}
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.passwordContainer}>
+        <TextInput
+          label="Confirm Password"
+          returnKeyType="done"
+          value={cnfPassword.value}
+          onChangeText={(text) => setCnfPassword({ value: text, error: "" })}
+          error={!!cnfPassword.error}
+          errorText={cnfPassword.error}
+          secureTextEntry={!confirmPasswordVisible} // Toggle visibility
+        />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+        >
+          <Icon
+            name={confirmPasswordVisible ? "visibility" : "visibility-off"}
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
       <Button
         mode="contained"
         onPress={onSignUpPressed}
@@ -180,5 +202,13 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 8,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
   },
 });

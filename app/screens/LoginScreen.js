@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
-
 import Background from "../components/Background";
 import Logo from "../components/Logo";
 import Header from "../components/Header";
@@ -34,6 +33,7 @@ export default function LoginScreen({ navigation }) {
     <Background>
       <BackButton goBack={navigation.goBack} />
       <Header>Welcome Back!</Header>
+      <Logo />
       <TextInput
         label="Email"
         returnKeyType="next"
@@ -46,16 +46,18 @@ export default function LoginScreen({ navigation }) {
         textContentType="emailAddress"
         keyboardType="email-address"
       />
-      <TextInput
-        label="Password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text, error: "" })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-      />
-      <View style={styles.forgotPassword}>
+      <View style={styles.passwordContainer}>
+        <TextInput
+          label="Password"
+          returnKeyType="done"
+          value={password.value}
+          onChangeText={(text) => setPassword({ value: text, error: "" })}
+          error={!!password.error}
+          errorText={password.error}
+          secureTextEntry
+        />
+        </View>
+        <View style={styles.forgotPassword}>
         <TouchableOpacity
           onPress={() => navigation.navigate("ResetPasswordScreen")}
         >
@@ -92,5 +94,13 @@ const styles = StyleSheet.create({
   link: {
     fontWeight: "bold",
     color: theme.colors.primary,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  eyeIcon: {
+    position: "absolute",
+    right: 10,
   },
 });
