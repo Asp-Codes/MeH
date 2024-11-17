@@ -9,18 +9,65 @@ import React from "react";
 import { SafeAreaView, View, ScrollView, Text, Image, } from "react-native";
 import { Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
+import { useState } from "react";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 export default function HomeScreen({ navigation }) {
+
+//   const userId= navigation.getParam("userId");
+  const [emotionCounts, setEmotionCounts] = useState({
+    happy: 0,
+    calm: 0,
+    sad: 0,
+    depressed: 0,
+  });
+
+  // Function to update the emotion count
+  const handleEmotionClick = (emotion) => {
+    setEmotionCounts((prevCounts) => ({
+      ...prevCounts,
+      [emotion]: prevCounts[emotion] + 1,
+    }));
+  };
+
+  // Determine the emotion with the maximum count
+  const maxEmotion = Object.keys(emotionCounts).reduce((a, b) =>
+    emotionCounts[a] > emotionCounts[b] ? a : b
+  );
+
+
+  const startTest = async() =>{
+	const response = await fetch("http://localhost:9000//api/v1/assessment/start-assessment", {
+	  method: "POST",
+	  headers: {
+		"Content-Type": "application/json",
+	  },
+	  body: JSON.stringify({}),
+	});
+	const data = await response.json();
+	console.log(data);
+	if (response.ok && data.success) {
+	  const testId = data.assessmentId;
+	  navigation.navigate("Test", {testId: testId});
+	} else {
+	  Alert.alert("Test Failed", data.message || "Invalid");
+	}
+  }
   const icons = [
     { name: "happy", label: "Happy", color: "#EF5DA8" },
     { name: "moon", label: "Calm", color: "#AEAFF7" },
-    { name: "leaf", label: "Relax", color: "#F09E54" },
-    { name: "eye", label: "Focus", color: "#A0E3E2" },
+    { name: "leaf", label: "Sad", color: "#F09E54" },
+    { name: "eye", label: "depressed", color: "#A0E3E2" },
   ];
+
+  const emotionColors = {
+    happy: "#EF5DA8",
+    calm: "#AEAFF7",
+    sad: "#F09E54",
+    depressed: "#A0E3E2",
+  };
   
   return (
 		<SafeAreaView
@@ -116,7 +163,7 @@ export default function HomeScreen({ navigation }) {
                       marginHorizontal: 6,
                     }}
                   >
-                    <Icon name={icon.name} size={30} color="#FFF" />
+                    <Icon name={icon.name} size={30} color="#FFF"   onPress={() => handleEmotionClick(icon.label.toLowerCase())}/>
                   </View>
             ))}
 				
@@ -150,14 +197,14 @@ export default function HomeScreen({ navigation }) {
 							color: "#371B34",
 							fontSize: 12,
 						}}>
-						{"Relax"}
+						{"sad"}
 					</Text>
 					<Text
 						style={{
 							color: "#371B34",
 							fontSize: 12,
 						}}>
-						{"Focus"}
+						{"depressed"}
 					</Text>
 				</View>
         </View>
@@ -185,66 +232,72 @@ export default function HomeScreen({ navigation }) {
 					{"Your Emotion score"}
 				</Text>
 				<View
-					style={{
-						width: screenWidth - 48,
-						height: 164,
-						flexDirection: "row",
-						justifyContent: "center",
-						alignItems: "flex-start",
-						backgroundColor: "#FCDDEC",
-						borderColor: "#ECE5FB",
-						borderRadius: 8,
-						// borderWidth: 1,
-						paddingTop: 21,
-						paddingBottom: 40,
-						// marginBottom: 1,
-						marginHorizontal: 30,
-            // paddingHorizontal: 24,
-					}}>
-					<View
-						style={{
-							width: 189,
-							// marginRight: 12,
-						}}>
-						<Text
-							style={{
-								color: "#371B34",
-								fontSize: 20,
-								marginBottom: 8,
-                fontWeight:"bold",
-                fontFamily:"Roboto",
-							}}>
-							{"Emotion tracker"}
-						</Text>
-						<Text
-							style={{
-								color: "#371B34",
-								fontSize: 15,
-								marginBottom: 24,
-                fontStyle: "italic",
-                fontWeight:"thin"
-							}}>
-							{"Kudos you are on a happy Mood"}
-						</Text>
-						<Text
-							style={{
-								color: "#EF5DA8",
-								fontSize: 20,
-                fontWeight: "bold",
-							}}>
-							{"Good Going"}
-						</Text>
-					</View>
-					<View
-						style={{
-							width: 89,
-							height: 84,
-							borderColor: "#5E27FD",
-							borderWidth: 1,
-							marginTop: 19,
-						}}>
-					</View>
-				</View>
+  style={{
+    width: screenWidth - 48,
+    height: 164,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    backgroundColor: emotionColors[maxEmotion], // Dynamically set background color
+    borderColor: "#ECE5FB",
+    borderRadius: 8,
+    paddingTop: 21,
+    paddingBottom: 40,
+    marginHorizontal: 30,
+  }}
+>
+  <View style={{ width: 189 }}>
+    <Text style={{ color: "#371B34", fontSize: 20, marginBottom: 8, fontWeight: "bold" }}>
+      {"Emotion Tracker"}
+    </Text>
+    <Text style={{ color: "#371B34", fontSize: 15, marginBottom: 24, fontStyle: "italic" }}>
+      {`You're feeling ${maxEmotion.charAt(0).toUpperCase() + maxEmotion.slice(1)}!`}
+    </Text>
+    <Text style={{ color: "#000", fontSize: 20, fontWeight: "bold" }}>
+      {
+        maxEmotion === "happy"
+          ? "Don't worry, you will be happy soon!"
+          : maxEmotion === "calm"
+          ? "Don't worry, you will be calm soon!"
+          : maxEmotion === "sad"
+          ? "Don't worry, you will feel be fine soon!"
+          : maxEmotion === "depressed"
+          ? "Don't worry, you will be fine soon!"
+          : "Stay positive!"
+      }
+    </Text>
+  </View>
+  <View
+    style={{
+      width: 89,
+      height: 84,
+      borderColor: "#5E27FD",
+      borderWidth: 1,
+      marginTop: 19,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Text
+      style={{
+        color: "#371B34",
+        fontSize: 20,
+        fontWeight: "bold",
+      }}
+    >
+    {
+            (() => {
+              const totalEmotions = Object.values(emotionCounts).reduce((acc, count) => acc + count, 0);
+              const percentage = totalEmotions > 0 ? ((emotionCounts[maxEmotion] / totalEmotions) * 100).toFixed(2) : 0;
+              return `${percentage}%`;
+            })()
+          }{/* Display the score for the max emotion */}
+    </Text>
+  </View>
+</View>
+	
+					
         </View>
 
 
@@ -270,6 +323,7 @@ export default function HomeScreen({ navigation }) {
 				</Text>
 
 				<View
+				onPress={startTest}
 					style={{
 						width: screenWidth-60,
 						height: 53,
@@ -288,7 +342,8 @@ export default function HomeScreen({ navigation }) {
 							color: "#FFFFFF",
 							fontSize: 16,
               fontWeight: "bold",
-						}}>
+						}}
+						>
 						{"Test now"}
 					</Text>
 				</View>
@@ -345,3 +400,4 @@ export default function HomeScreen({ navigation }) {
 		</SafeAreaView>
 	);
 }
+

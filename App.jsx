@@ -11,6 +11,8 @@ import {
   ResetPasswordScreen,
   HomeScreen,
 } from "./app/screens";
+import Cpp from "./app/screens/Chatbot";
+import Questions from "./app/screens/questions";
 
 const Stack = createStackNavigator();
 
@@ -28,6 +30,8 @@ export default function App() {
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
           <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
           <Stack.Screen name="HomeScreen" component={HomeScreen} />
+          <Stack.Screen name="chatbot" component={Cpp} />
+          <Stack.Screen name="questions" component={Questions} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}
