@@ -15,6 +15,25 @@ const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 export default function HomeScreen({ navigation }) {
+
+  const userId= navigation.getParam("userId");
+
+  const startTest = async() =>{
+	const response = await fetch("http://localhost:3000/start-assessment", {
+	  method: "POST",
+	  headers: {
+		"Content-Type": "application/json",
+	  },
+	  body: JSON.stringify({}),
+	});
+	const data = await response.json();
+	if (response.ok && data.success) {
+	  const testId = data.assessmentId;
+	  navigation.navigate("Test", {testId: testId});
+	} else {
+	  Alert.alert("Test Failed", data.message || "Invalid");
+	}
+  }
   const icons = [
     { name: "happy", label: "Happy", color: "#EF5DA8" },
     { name: "moon", label: "Calm", color: "#AEAFF7" },
@@ -345,3 +364,4 @@ export default function HomeScreen({ navigation }) {
 		</SafeAreaView>
 	);
 }
+

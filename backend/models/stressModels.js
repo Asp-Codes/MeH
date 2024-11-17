@@ -20,6 +20,6 @@ const assessmentSchema = new mongoose.Schema({
     stressLevel: {
         type: String,
     }
-}, { timestamps: true }); // Adds createdAt and updatedAt fields
+}, { timestamps: true }); 
 
 module.exports = mongoose.model('Assessment', assessmentSchema);

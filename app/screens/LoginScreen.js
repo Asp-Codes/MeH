@@ -16,7 +16,7 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
 
-  const onLoginPressed = () => {
+  const onLoginPressed = async() => {
     const emailError = emailValidator(email.value);
     const passwordError = passwordValidator(password.value);
     if (emailError || passwordError) {
@@ -24,12 +24,23 @@ export default function LoginScreen({ navigation }) {
       setPassword({ ...password, error: passwordError });
       return;
     }
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "HomeScreen" }],
-    });
-  };
-
+    else{
+      const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        navigation.navigate("Home", {userId: data.user1});
+      } else {
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
+      }
+    } 
+  }
+  
   return (
     <Background>
       <BackButton goBack={navigation.goBack} />
@@ -97,3 +108,4 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
 });
+
