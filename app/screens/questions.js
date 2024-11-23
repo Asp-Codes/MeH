@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 
 export default function Questions({ route, navigation }) {
-
-  // const { testId } = route.params;
-  console.log(route.params);
+  const { testId } = route.params;
+  console.log(testId);
+  
   const questions = [
     {
       question: "When you see a long to-do list in the morning, how does it make you feel?",
@@ -59,35 +59,36 @@ export default function Questions({ route, navigation }) {
   };
 
   const nextQuestion = async() => {
+    const response = await fetch("https://stressback.onrender.com/api/v1/assessment/submit-answer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({assessmentId:testId,answer:answer}),
+      credentials: "include",
+    });
 
-    const response = await fetch("http://localhost:9000/submit-answer", {
-	  method: "POST",
-	  headers: {
-		"Content-Type": "application/json",
-	  },
-	  body: JSON.stringify({assessmentId:testId,answer:answer}),
-	});
+    console.log(response);
 
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelected('');
       setAnswer('');
-    }
-    else{
-        const response = await fetch(`http://localhost:9000/get-score/${testId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        const data = await response.json();
-        if (response.ok){
-            const assm = data.assessment;
-            const stressLevel = assm.stressLevel;
-            const score = assm.score;
-            navigation.navigate("Result", {stressLevel: stressLevel, score: score});
-        }
-
+    } else {
+      const response = await fetch(`https://stressback.onrender.com/api/v1/assessment/get-score/${testId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (response.ok) {
+        const assm = data.assessment;
+        const stressLevel = assm.stressLevel;
+        const score = assm.score;
+        navigation.navigate("analytics", { stressLevel, score });
+      }
     }
   };
 
@@ -108,15 +109,28 @@ export default function Questions({ route, navigation }) {
             onPress={() => onSetAnswer(index)}
             style={[
               styles.optionBox,
-              { backgroundColor: selected === index ? 'green' : 'transparent' }
+              { 
+                backgroundColor: selected === index ? '#006400' : 'transparent',
+                borderColor: selected === index ? '#006400' : '#000' 
+              }
             ]}
           >
-            <Text style={styles.optionText}>{option}</Text>
+            <Text style={[
+              styles.optionText,
+              { color: selected === index ? 'white' : '#333' }
+            ]}>
+              {option}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Button mode="contained" textColor="pink" onPress={nextQuestion} labelStyle={styles.buttonText}>
+      <Button 
+        mode="contained" 
+        onPress={nextQuestion} 
+        labelStyle={styles.buttonText} 
+        style={styles.submitButton}
+      >
         Submit
       </Button>
     </View>
@@ -127,45 +141,61 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 50,
+    justifyContent: 'center',
     backgroundColor: '#fff',
+    padding: 20,
   },
   questionBox: {
-    backgroundColor: '#caf0f1',
-    borderRadius: 5,
-    padding: 10,
+    backgroundColor: '#6EC1B7', // Your primary color
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   questionNumber: {
-    fontSize: 35,
+    fontSize: 24,
     textAlign: 'center',
+    color: '#fff',
   },
   optionsContainer: {
     alignItems: 'center',
-    backgroundColor: '#caf0f1',
+    backgroundColor: '#f1f8f9', // Lighter background color for the options
     padding: 20,
-    borderRadius: 5,
-    marginTop: 20,
-    width: '90%',
+    borderRadius: 8,
+    width: '100%',
   },
   questionText: {
     fontSize: 22,
     textAlign: 'center',
     marginBottom: 20,
+    color: '#333',
   },
   optionBox: {
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderWidth: 2,
-    borderColor: 'black',
-    width: '80%',
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 10,
+    borderRadius: 8,
   },
   optionText: {
-    fontSize: 20,
+    fontSize: 18,
+    textAlign: 'center',
   },
   buttonText: {
     fontSize: 20,
+    fontWeight: 'bold',
+  },
+  submitButton: {
+    marginTop: 20,
+    width: '60%',
+    height: 50,
+    backgroundColor: '#4C4C9D',
+    borderRadius: 8,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
-

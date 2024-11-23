@@ -13,6 +13,8 @@ import {
 } from "./app/screens";
 import Cpp from "./app/screens/Chatbot";
 import Questions from "./app/screens/questions";
+import EmailVerifyScreen from "./app/screens/EmailVerifyScreen";
+import AnalyticsPage from "./app/screens/analytics";
 
 const Stack = createStackNavigator();
 
@@ -21,7 +23,7 @@ export default function App() {
     <Provider theme={theme}>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="RegisterScreen"
+          initialRouteName="HomeScreen"
           screenOptions={{
             headerShown: false,
           }}
@@ -32,6 +34,8 @@ export default function App() {
           <Stack.Screen name="HomeScreen" component={HomeScreen} />
           <Stack.Screen name="chatbot" component={Cpp} />
           <Stack.Screen name="questions" component={Questions} />
+          <Stack.Screen name="EmailVerifyScreen" component={EmailVerifyScreen} />
+          <Stack.Screen name="analytics" component={AnalyticsPage} />
           <Stack.Screen
             name="ResetPasswordScreen"
             component={ResetPasswordScreen}
@@ -41,3 +45,5 @@ export default function App() {
     </Provider>
   );
 }
+
+

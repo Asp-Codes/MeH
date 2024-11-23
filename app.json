@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Exlogrn",
-    "slug": "Exlogrn",
+    "name": "MeH",
+    "slug": "MeH",
     "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/app.png",
@@ -18,10 +18,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/app.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.hemanth_asp1.MeH"
     },
     "web": {
       "favicon": "./assets/app.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7411f1ff-dfee-4c61-9380-6da36f345906"
+      }
     }
   }
 }

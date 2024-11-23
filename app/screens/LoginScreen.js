@@ -10,12 +10,15 @@ import BackButton from "../components/BackButton";
 import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
+import { Alert } from "react-native";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
+  const [passwordVisible, setPasswordVisible] = useState(false); // State for password visibility
 
-  const onLoginPressed = async() => {
+  const onLoginPressed = async () => {
     const emailError = emailValidator(email.value);
     const passwordError = passwordValidator(password.value);
     if (emailError || passwordError) {
@@ -23,29 +26,38 @@ export default function LoginScreen({ navigation }) {
       setPassword({ ...password, error: passwordError });
       return;
     }
-    else{
-      const response = await fetch("http://localhost:9000/login", {
+    try {
+      const response = await fetch("https://stressback.onrender.com/api/v1/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json", // Set content type to JSON
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value,
+        }),
       });
       const data = await response.json();
-      if (response.ok && data.success) {
-        navigation.navigate("Home", {userId: data.user1});
+      console.log("Data: ", data);
+      if (response.ok) {
+        Alert.alert("Login successful!");
+        navigation.navigate("HomeScreen");
       } else {
-        Alert.alert("Login Failed", data.message || "Invalid credentials");
+        Alert.alert(data.message || "Login failed");
       }
-    } 
-  }
-  
+    } catch (error) {
+      Alert.alert("An error occurred. Please try again.");
+      console.error(error);
+    }
+  };
+
   return (
     <Background>
       <BackButton goBack={navigation.goBack} />
       <Header>Welcome Back!</Header>
       <Logo />
       <TextInput
+        style={styles.input} // Apply uniform style
         label="Email"
         returnKeyType="next"
         value={email.value}
@@ -59,20 +71,31 @@ export default function LoginScreen({ navigation }) {
       />
       <View style={styles.passwordContainer}>
         <TextInput
+          style={styles.input} // Apply uniform style
           label="Password"
           returnKeyType="done"
           value={password.value}
           onChangeText={(text) => setPassword({ value: text, error: "" })}
           error={!!password.error}
           errorText={password.error}
-          secureTextEntry
+          secureTextEntry={!passwordVisible} // Toggle visibility
         />
-        </View>
-        <View style={styles.forgotPassword}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ResetPasswordScreen")}
+          style={styles.eyeIcon}
+          onPress={() => setPasswordVisible(!passwordVisible)}
         >
-          <Text style={styles.forgot}>Forgot your password ?</Text>
+          <Icon
+            name={passwordVisible ? "visibility" : "visibility-off"}
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.forgotPassword}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("ForgotPasswordScreen")}
+        >
+          <Text style={styles.forgot}>Forgot your password?</Text>
         </TouchableOpacity>
       </View>
       <Button mode="contained" onPress={onLoginPressed}>
@@ -96,7 +119,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    marginTop: 4,
+    marginTop: 3,
   },
   forgot: {
     fontSize: 13,
@@ -114,5 +137,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 10,
   },
+  input: {
+    width: "100%",
+    height: 50, // Ensure consistent height
+    backgroundColor: "white", // Set a background color for uniformity
+    marginBottom: 10, // Add some space between inputs
+  },
 });
-

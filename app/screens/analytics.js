@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
-const AnalyticsPage = ({ navigation, route }) => {
-    const { stressLevel, score } = route.params;
+const AnalyticsPage = ({ navigation }) => {
     const [assessmentData, setAssessmentData] = useState([]);
+    const [stressLevel, setStressLevel] = useState(0);
 
     useEffect(() => {
         fetchAssessmentData();
@@ -12,103 +12,176 @@ const AnalyticsPage = ({ navigation, route }) => {
 
     const fetchAssessmentData = async () => {
         try {
-            const response = await fetch('http://localhost:9000/me/assessments');
+            const response = await fetch('https://stressback.onrender.com/api/v1/me/assessments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+    
             const data = await response.json();
-            const { assessment } = data;
-            setAssessmentData(assessment);
+            console.log('API Response:', data); // Log the full API response
+    
+            if (data && data.assessments) {
+                // Only take the last 7 valid entries
+                const last7Data = data.assessments
+                    .slice(-7)
+                    .filter(item => {
+                        const validScore = !isNaN(item.score) && item.score !== -Infinity && item.score !== null;
+                        const validDate = item.date && typeof item.date === 'string';
+                        if (!validScore || !validDate) {
+                            console.warn(`Invalid data: ${JSON.stringify(item)}`);
+                        }
+                        return validScore && validDate;
+                    });
+    
+                console.log('Filtered Assessment Data:', last7Data); // Log filtered data
+    
+                setAssessmentData(last7Data);
+            } else {
+                console.warn('No valid assessments found in response');
+            }
+    
         } catch (error) {
             console.error('Error fetching assessment data:', error);
         }
     };
+    
 
-    const data = {
-        labels: assessmentData.map(item => item.date),
+    // Prepare data and labels for the last 7 data points
+    const data = assessmentData.map(item => {
+        // Ensure score is a valid number
+        const validScore = isNaN(item.score) ? 0 : item.score;
+        return validScore;
+    });
+
+    const labels = assessmentData.map(item => item.date);
+
+    // Log data and labels to ensure they're correct
+    console.log('Chart Data:', data);
+    console.log('Chart Labels:', labels);
+
+    const chartData = {
+        labels: labels,
         datasets: [
             {
-                data: assessmentData.map(item => item.score),
-                strokeWidth: 2,
-                color: () => 'rgba(75, 192, 192, 1)',
+                data: data,
+                strokeWidth: 2, // Width of the line
             },
         ],
     };
 
-    let stressMessage;
-    if (score <= 25) {
-        stressMessage = 'You are not stressed';
-    } else if (score <= 50) {
-        stressMessage = 'Mild stress';
-    } else if (score <= 75) {
-        stressMessage = 'Moderate stress';
-    } else {
-        stressMessage = 'Severe stress';
-    }
+    const chartConfig = {
+        backgroundColor: '#fff',
+        backgroundGradientFrom: '#fff',
+        backgroundGradientTo: '#fff',
+        decimalPlaces: 2, // Optional: for percentage or floating-point values
+        color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`, // Line color
+        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Label color
+        strokeWidth: 2,
+        barPercentage: 0.5,
+        useShadowColorFromDataset: false, // To remove shadow from datasets
+        propsForDots: {
+            r: '6',
+            strokeWidth: '2',
+            stroke: '#ffa726',
+        },
+        bezier: true, // Enable Bezier curve for the line chart
+    };
+
+    const getStressLevelMessage = (score) => {
+        if (score <= 25) return 'You are not stressed';
+        if (score <= 50) return 'Mild stress';
+        if (score <= 75) return 'Moderate stress';
+        return 'Severe stress';
+    };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Stress Percentage</Text>
-            <Text style={styles.score}>{score}%</Text>
-            <Text style={styles.stressLevel}>Stress Level: {stressLevel}</Text>
-            <Text style={styles.suggestions}>Well-being Suggestions:</Text>
-            <Text style={styles.suggestion}>- Take breaks and relax</Text>
-            <Text style={styles.suggestion}>- Practice deep breathing exercises</Text>
-            <Text style={styles.suggestion}>- Engage in physical activity</Text>
-            <Text style={styles.stressMessage}>{stressMessage}</Text>
+        <ScrollView contentContainerStyle={styles.container}>
+            <Text style={styles.title}>Your Stress Analytics</Text>
 
-            {/* Render the chart */}
-            <LineChart
-                data={data}
-                width={400}
-                height={220}
-                chartConfig={{
-                    backgroundColor: '#fff',
-                    backgroundGradientFrom: '#fff',
-                    backgroundGradientTo: '#fff',
-                    color: () => 'rgba(75, 192, 192, 1)',
-                    labelColor: () => '#000',
-                    strokeWidth: 2,
-                }}
-                style={{ marginVertical: 8 }}
-            />
-        </View>
+            <Text style={styles.stressPercentage}>{stressLevel}%</Text>
+
+            <Text style={styles.stressLevelMessage}>{getStressLevelMessage(stressLevel)}</Text>
+
+            <View style={styles.suggestionsContainer}>
+                <Text style={styles.suggestionsTitle}>Well-being Suggestions:</Text>
+                <Text style={styles.suggestion}>- Take breaks and relax</Text>
+                <Text style={styles.suggestion}>- Practice deep breathing exercises</Text>
+                <Text style={styles.suggestion}>- Engage in physical activity</Text>
+            </View>
+
+            <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Stress Score Over Time</Text>
+                <LineChart
+                    data={chartData}
+                    width={300} // from react-native
+                    height={220}
+                    chartConfig={chartConfig}
+                    style={styles.chart}
+                />
+            </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
+        flexGrow: 1,
+        padding: 20,
         alignItems: 'center',
-        padding: 16,
+        backgroundColor: '#f5f5f5',
     },
     title: {
-        fontSize: 24,
+        fontSize: 32,
         fontWeight: 'bold',
-        marginBottom: 16,
+        color: '#333',
+        marginBottom: 20,
     },
-    score: {
+    stressPercentage: {
         fontSize: 48,
         fontWeight: 'bold',
-        marginBottom: 16,
+        color: '#333',
+        marginBottom: 10,
     },
-    stressLevel: {
+    stressLevelMessage: {
         fontSize: 18,
-        marginBottom: 16,
+        color: '#666',
+        marginBottom: 20,
     },
-    suggestions: {
-        fontSize: 18,
+    suggestionsContainer: {
+        width: '100%',
+        backgroundColor: 'white',
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 20,
+    },
+    suggestionsTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: 10,
     },
     suggestion: {
         fontSize: 16,
-        marginBottom: 4,
+        marginBottom: 8,
     },
-    stressMessage: {
-        fontSize: 18,
+    chartContainer: {
+        width: '100%',
+        backgroundColor: 'white',
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 20,
+    },
+    chartTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
-        marginTop: 16,
+        marginBottom: 10,
+    },
+    chart: {
+        borderRadius: 10,
+        backgroundColor: 'white',
     },
 });
 
 export default AnalyticsPage;
-

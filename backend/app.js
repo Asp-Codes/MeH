@@ -6,7 +6,13 @@ const bodyParser=require("body-parser");
 const router = require("./routes/userRoutes");
 const assessRouter = require("./routes/stressRoutes");
 
-app.use(cors());
+app.set('trust proxy', true);
+
+app.use(cors({
+    origin: ['http://localhost:8081'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
+}));
 
 app.use(express.json());
 app.use(cookieParser());

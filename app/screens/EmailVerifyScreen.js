@@ -1,80 +1,80 @@
-import React, { useState, useRef } from "react";
-import { View, StyleSheet, TextInput, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
 import { Text } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import Button from "../components/Button";
 import { theme } from "../core/theme";
+import { Alert } from "react-native";
+
+const { width } = Dimensions.get("window");
 
 export default function EmailVerifyScreen({ navigation }) {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [email, setEmail] = useState({ value: "", error: "" });
+  const [otp, setOtp] = useState({ value: "", error: "" });
   const [otpVisible, setOtpVisible] = useState(false);
-  const inputs = useRef([]);
 
-  const handleChange = (text, index) => {
-    if (!isNaN(text) && text.length <= 1) {
-      const newOtp = [...otp];
-      newOtp[index] = text;
-      setOtp(newOtp);
-
-      // Focus on the next input
-      if (text !== "" && index < 5) {
-        inputs.current[index + 1].focus();
-      }
-    }
-  };
-
-  const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === "Backspace" && otp[index] === "" && index > 0) {
-      inputs.current[index - 1].focus();
-    }
-  };
-
-  const onConfirmPressed = () => {
-    if (otp.join("").length === 6) {
-      Alert.alert("OTP Verified Successfully!");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "HomeScreen" }],
+  const verifyEmail = async () => {
+    try {
+      const response = await fetch("https://stressback.onrender.com/api/v1/verify-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Set content type to JSON
+        },
+        body: JSON.stringify({
+          email: email.value,
+          otp: otp.value,
+        }),
+        credentials: 'include',
       });
-    } else {
-      Alert.alert("Please enter a valid 6-digit OTP.");
-    }
-  };
 
+      const data = await response.json();
+      console.log("Data: ", data);
+      navigation.navigate("HomeScreen");
+    } catch (error) {
+      Alert.alert("An error occurred. Please try again.");
+      console.error(error);
+    }
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Verify Your Email</Text>
-      <Text style={styles.subHeader}>Enter the 6-digit OTP sent to your email</Text>
-      <View style={styles.otpContainer}>
-        {otp.map((digit, index) => (
-          <View key={index} style={styles.inputWrapper}>
-            <TextInput
-              ref={(ref) => (inputs.current[index] = ref)}
-              style={styles.input}
-              keyboardType="number-pad"
-              maxLength={1}
-              secureTextEntry={!otpVisible}
-              value={digit}
-              onChangeText={(text) => handleChange(text, index)}
-              onKeyPress={(e) => handleKeyPress(e, index)}
-            />
-          </View>
-        ))}
-        {/* Add the eye icon after the last box */}
+      <Text style={styles.subHeader}>Enter your email and the OTP sent to it</Text>
+
+      {/* Email Input */}
+      <TextInput
+        style={styles.emailInput}
+        placeholder="Enter your email"
+        placeholderTextColor="#999"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+      />
+
+      {/* OTP Input */}
+      <View style={styles.otpWrapper}>
+        <TextInput
+          style={styles.otpInput}
+          placeholder="Enter OTP"
+          placeholderTextColor="#999"
+          keyboardType="number-pad"
+          value={otp}
+          secureTextEntry={!otpVisible}
+          onChangeText={setOtp}
+        />
         <TouchableOpacity
           style={styles.eyeIcon}
           onPress={() => setOtpVisible(!otpVisible)}
         >
-          <Icon
-            name={otpVisible ? "visibility" : "visibility-off"}
-            size={24}
-            color="gray"
-          />
+          <Text style={{ color: theme.colors.primary, fontSize: 14 }}>
+            {otpVisible ? "Hide" : "Show"}
+          </Text>
         </TouchableOpacity>
       </View>
-      <Button mode="contained" onPress={onConfirmPressed} style={styles.button}>
+
+      <Button mode="contained" onPress={verifyEmail} style={styles.button}>
         Confirm
       </Button>
+
       <View style={styles.row}>
         <Text>Didn't receive OTP? </Text>
         <TouchableOpacity>
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   header: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "bold",
     color: theme.colors.primary,
     marginBottom: 8,
@@ -106,33 +106,44 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: "center",
   },
-  otpContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  inputWrapper: {
-    position: "relative",
-    marginHorizontal: 5,
-  },
-  input: {
-    width: 50,
+  emailInput: {
+    width: width * 0.9, // 90% of screen width
     height: 50,
     borderWidth: 1,
     borderColor: theme.colors.primary,
     borderRadius: 8,
-    textAlign: "center",
-    fontSize: 18,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: "black",
+    backgroundColor: "white",
+    marginBottom: 16,
+  },
+  otpWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: width * 0.9, // 90% of screen width
+    marginBottom: 16,
+  },
+  otpInput: {
+    flex: 1,
+    height: 50,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
     color: "black",
     backgroundColor: "white",
   },
   eyeIcon: {
     marginLeft: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
   button: {
     marginTop: 24,
-    width: "80%",
+    width: width * 0.9, // 90% of screen width
   },
   row: {
     flexDirection: "row",

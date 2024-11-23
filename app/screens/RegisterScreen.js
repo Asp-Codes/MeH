@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Text } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Import an icon library
-
 import Background from "../components/Background";
 import Header from "../components/Header";
 import Button from "../components/Button";
@@ -72,21 +71,24 @@ export default function RegisterScreen({ navigation }) {
     });
 
     try {
-      const response = await fetch("https://meh-production.up.railway.app/v1/register", {
+      const response = await fetch("https://stressback.onrender.com/api/v1/register", {
         method: "POST",
-        body: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          name: name.value,
+          email: email.value,
+          password: password.value,
+          confirmPass: cnfPassword.value,
+        }),
+        credentials: 'include',
       });
-
       const data = await response.json();
+      console.log("Data: ",data);
+      navigation.navigate("EmailVerifyScreen");
       if (response.ok) {
         Alert.alert("Registration successful!");
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "HomeScreen" }],
-        });
       } else {
         Alert.alert(data.message || "Registration failed");
       }
@@ -133,7 +135,7 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setPassword({ value: text, error: "" })}
           error={!!password.error}
           errorText={password.error}
-          secureTextEntry={!passwordVisible} // Toggle visibility
+          secureTextEntry={!passwordVisible}
         />
         <TouchableOpacity
           style={styles.eyeIcon}
@@ -154,7 +156,7 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setCnfPassword({ value: text, error: "" })}
           error={!!cnfPassword.error}
           errorText={cnfPassword.error}
-          secureTextEntry={!confirmPasswordVisible} // Toggle visibility
+          secureTextEntry={!confirmPasswordVisible}
         />
         <TouchableOpacity
           style={styles.eyeIcon}
@@ -212,3 +214,4 @@ const styles = StyleSheet.create({
     right: 10,
   },
 });
+

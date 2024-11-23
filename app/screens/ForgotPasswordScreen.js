@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 import Background from "../components/Background";
 import BackButton from "../components/BackButton";
@@ -17,7 +18,7 @@ export default function ForgotPasswordScreen({ navigation }) {
       setEmail({ ...email, error: emailError });
       return;
     }
-    navigation.navigate("LoginScreen");
+    navigation.navigate("RegisterScreen");
   };
 
   return (
@@ -45,6 +46,24 @@ export default function ForgotPasswordScreen({ navigation }) {
       >
         Continue
       </Button>
+      <View style={styles.row}>
+        <Text>Remember your password? </Text>
+        <TouchableOpacity onPress={() => navigation.replace("ResetPasswordScreen")}>
+          <Text style={styles.link}>Log in</Text>
+        </TouchableOpacity>
+      </View>
     </Background>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    marginTop: 20,
+    justifyContent: "center",
+  },
+  link: {
+    fontWeight: "bold",
+    color: "#6200ee",
+  },
+});

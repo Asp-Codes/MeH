@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, SafeAreaView } from "react-native";
-import BackButton from "../components/BackButton";
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Import Icon from react-native-vector-icons
+import { useNavigation } from '@react-navigation/native'; // Import navigation for back action
 
 const GEMINI_API_KEY = "AIzaSyDHoAhrc2a61YI5jlODtbYtmDfou2FXxW8";
 
@@ -13,6 +14,7 @@ type Message = {
 const Cpp = () => {
   const [msg, setMsg] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const navigation = useNavigation(); // Hook to get navigation object
 
   useEffect(() => {
     // Initial message from chatbot 404
@@ -72,12 +74,6 @@ const Cpp = () => {
       .replace(/\*\*/g, "")        // Remove ** for markdown bold
       .replace(/\*/g, "");  
   
-      // Ensure the reply is within 100 words if it's not already summarized
-      // const words = reply.split(" ");
-      // if (words.length > 100) {
-      //   reply = words.slice(0, 100).join(" ") + "...";  // Truncate and add ellipsis if longer than 100 words
-      // }
-  
       // Add Gemini response to the list
       const geminiMessage: Message = { text: reply, sender: 'gemini' };
       setMessages(prevMessages => [geminiMessage, ...prevMessages]);
@@ -104,6 +100,14 @@ const Cpp = () => {
   return (
     <SafeAreaView style={styles.container}>
      
+      {/* Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerText}>404AI</Text>
+      </View>
+
       <FlatList
         data={messages}
         renderItem={renderItem}
@@ -133,6 +137,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212', // White background for the container
     paddingTop: 50,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginBottom: 10,
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    fontSize: 20,
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   messagesContainer: {
     padding: 10,
@@ -167,7 +186,6 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#121212',
     borderTopColor: "#fff",
-    // borderTopWidth: 1, 
     borderBottomWidth: 0.5,// White background for input area
     borderBottomColor: "#fff",
   },
