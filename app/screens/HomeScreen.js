@@ -110,6 +110,9 @@ export default function HomeScreen({ navigation }) {
     sad: '#F09E54',
     depressed: '#A0E3E2',
   };
+  
+  const stressLevel = "undef";
+  const score = 10;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
@@ -275,7 +278,7 @@ export default function HomeScreen({ navigation }) {
 
             }}
 
-            onPress={() => navigation.navigate("analytics")}
+            onPress={() => navigation.navigate("analytics", { flag:false,stressLevel:stressLevel, score:score })}
 
           >
 

@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
-const AnalyticsPage = ({ navigation }) => {
-    const [assessmentData, setAssessmentData] = useState([]);
-    const [stressLevel, setStressLevel] = useState(0);
+const AnalyticsPage = ({ route,navigation }) => {
 
+    const {flag,stressLevel,score}=route.params;
+    const [assessmentData, setAssessmentData] = useState([]);
+  
     useEffect(() => {
         fetchAssessmentData();
     }, []);
@@ -62,7 +63,7 @@ const AnalyticsPage = ({ navigation }) => {
     console.log('Chart Data:', data);
     console.log('Chart Labels:', labels);
 
-    const chartData = {
+    /*const chartData = {
         labels: labels,
         datasets: [
             {
@@ -88,31 +89,25 @@ const AnalyticsPage = ({ navigation }) => {
             stroke: '#ffa726',
         },
         bezier: true, // Enable Bezier curve for the line chart
-    };
+    };*/
 
-    const getStressLevelMessage = (score) => {
-        if (score <= 25) return 'You are not stressed';
-        if (score <= 50) return 'Mild stress';
-        if (score <= 75) return 'Moderate stress';
-        return 'Severe stress';
-    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Your Stress Analytics</Text>
-
-            <Text style={styles.stressPercentage}>{stressLevel}%</Text>
-
-            <Text style={styles.stressLevelMessage}>{getStressLevelMessage(stressLevel)}</Text>
-
-            <View style={styles.suggestionsContainer}>
-                <Text style={styles.suggestionsTitle}>Well-being Suggestions:</Text>
-                <Text style={styles.suggestion}>- Take breaks and relax</Text>
-                <Text style={styles.suggestion}>- Practice deep breathing exercises</Text>
-                <Text style={styles.suggestion}>- Engage in physical activity</Text>
-            </View>
-
-            <View style={styles.chartContainer}>
+            {flag && (
+                <>
+                    <Text style={styles.title}>Your Stress Analytics</Text>
+                    <Text style={styles.stressPercentage}>{score}%</Text>
+                    <Text style={styles.stressLevelMessage}>{stressLevel}</Text>
+                    <View style={styles.suggestionsContainer}>
+                        <Text style={styles.suggestionsTitle}>Well-being Suggestions:</Text>
+                        <Text style={styles.suggestion}>- Take breaks and relax</Text>
+                        <Text style={styles.suggestion}>- Practice deep breathing exercises</Text>
+                        <Text style={styles.suggestion}>- Engage in physical activity</Text>
+                    </View>
+                </>
+            )}
+            {/*<View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Stress Score Over Time</Text>
                 <LineChart
                     data={chartData}
@@ -121,7 +116,7 @@ const AnalyticsPage = ({ navigation }) => {
                     chartConfig={chartConfig}
                     style={styles.chart}
                 />
-            </View>
+            </View>*/}
         </ScrollView>
     );
 };

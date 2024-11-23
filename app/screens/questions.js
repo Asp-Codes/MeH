@@ -87,7 +87,7 @@ export default function Questions({ route, navigation }) {
         const assm = data.assessment;
         const stressLevel = assm.stressLevel;
         const score = assm.score;
-        navigation.navigate("analytics", { stressLevel, score });
+        navigation.navigate("analytics", { flag:true,stressLevel:stressLevel, score:score });
       }
     }
   };
