@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import { LineChart, Grid, YAxis, XAxis } from 'react-native-svg-charts';
 import * as shape from 'd3-shape';
+import { theme } from '../core/theme';
+import BackButton from "../components/BackButton";
 
 const AnalyticsPage = ({ route }) => {
     const { flag, stressLevel, score } = route.params;
@@ -31,7 +33,7 @@ const AnalyticsPage = ({ route }) => {
     // Function to shuffle array and return the first 3 unique video links
     const getRandomVideos = () => {
         const shuffledVideos = [...videoLinks].sort(() => 0.5 - Math.random());
-        return shuffledVideos.slice(0, 3); // Get 3 unique random videos
+        return shuffledVideos.slice(0, 3);
     };
 
     // Function to get random texts
@@ -67,11 +69,9 @@ const AnalyticsPage = ({ route }) => {
                 );
                 setAssessmentData(last7Data);
             } else {
-                console.warn('No valid assessments found in response');
                 setError('No valid assessments found');
             }
         } catch (error) {
-            console.error('Error fetching assessment data:', error);
             setError('Error fetching data');
         } finally {
             setLoading(false);
@@ -79,12 +79,12 @@ const AnalyticsPage = ({ route }) => {
     };
 
     const lineChartData = assessmentData.map(item => item.score || 0);
-    const xAxisLabels = assessmentData.map((_, index) => index + 1); // Numbered Tests
+    const xAxisLabels = assessmentData.map((_, index) => index + 1);  // Numbered Tests
 
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#4682b4" />
+                <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         );
     }
@@ -103,10 +103,13 @@ const AnalyticsPage = ({ route }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
+            <BackButton goBack={() => navigation.navigate('Home')} />
             {flag ? (
                 <View style={styles.stressContainer}>
                     <Text style={styles.title}>Your Stress Analytics</Text>
-                    <Text style={styles.stressPercentage}>{score}%</Text>
+                    <View style={styles.stressPercentageContainer}>
+                        <Text style={styles.stressPercentage}>{score.toFixed(2)}%</Text>
+                    </View>
                     <Text style={styles.stressLevelMessage}>{stressLevel}</Text>
                 </View>
             ) : (
@@ -116,7 +119,7 @@ const AnalyticsPage = ({ route }) => {
                         <YAxis
                             data={lineChartData}
                             contentInset={{ top: 20, bottom: 20 }}
-                            svg={{ fontSize: 12, fill: '#666' }}
+                            svg={{ fontSize: 12, fill: theme.colors.text }}
                             numberOfTicks={5}
                             formatLabel={value => `${value}`}
                             style={styles.yAxis}
@@ -125,18 +128,18 @@ const AnalyticsPage = ({ route }) => {
                             <LineChart
                                 style={styles.chart}
                                 data={lineChartData}
-                                svg={{ stroke: '#4682b4', strokeWidth: 2 }}
+                                svg={{ stroke: theme.colors.primary, strokeWidth: 2 }}
                                 contentInset={{ top: 20, bottom: 20 }}
                                 curve={shape.curveBasis}
                             >
-                                <Grid svg={{ stroke: '#ccc', strokeWidth: 0.5 }} />
+                                <Grid svg={{ stroke: theme.colors.secondary, strokeWidth: 0.5 }} />
                             </LineChart>
                             <XAxis
                                 style={styles.xAxis}
                                 data={xAxisLabels}
                                 formatLabel={(_, index) => `${index + 1}`}
                                 contentInset={{ left: 10, right: 10 }}
-                                svg={{ fontSize: 12, fill: '#666' }}
+                                svg={{ fontSize: 12, fill: theme.colors.text }}
                             />
                         </View>
                     </View>
@@ -166,43 +169,57 @@ const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
         padding: 20,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: theme.colors.background,
     },
     stressContainer: {
         alignItems: 'center',
         marginBottom: 20,
-        marginTop: 20,
+        marginTop: 20, // Added margin on top
     },
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
-        marginTop: 20,
+        color: theme.colors.primary,
+    },
+    stressPercentageContainer: {
+        width: 150,
+        height: 150,
+        borderRadius: 60, // Makes it round
+        borderWidth: 8,
+        borderColor: theme.colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 20, // Space between title and percentage
+        backgroundColor: theme.colors.surface,
+        shadowColor: theme.colors.shadow,
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
     },
     stressPercentage: {
-        fontSize: 48,
+        fontSize: 36,
         fontWeight: 'bold',
-        color: '#ff6f61',
-        marginBottom: 10,
+        color: theme.colors.primary,
     },
     stressLevelMessage: {
         fontSize: 18,
-        color: '#666',
-        marginBottom: 20,
+        color: theme.colors.secondary,
         textAlign: 'center',
     },
     chartContainer: {
-        width: '100%',
-        backgroundColor: 'white',
-        padding: 15,
+        backgroundColor: theme.colors.surface,
+        padding: 20,
         borderRadius: 10,
-        marginBottom: 20,
+        marginVertical: 20,
+        borderWidth: 1,
+        borderColor: theme.colors.primary,
+        shadowColor: theme.colors.shadow,
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
     },
     chartTitle: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 10,
+        color: theme.colors.primary,
     },
     chartArea: {
         flexDirection: 'row',
@@ -213,46 +230,43 @@ const styles = StyleSheet.create({
     },
     chartContent: {
         flex: 1,
-        marginLeft: 20,
+        marginLeft: 10,
     },
     chart: {
         height: '100%',
-        width: '100%',
     },
     xAxis: {
         marginTop: 10,
     },
     recommendationsContainer: {
-        marginTop: 30,
+        marginTop: 20,
     },
     recommendationTitle: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 20,
+        color: theme.colors.primary,
     },
     recommendationCard: {
-        backgroundColor: '#fff',
+        backgroundColor: theme.colors.surface,
         padding: 15,
         borderRadius: 10,
-        marginBottom: 15,
-        shadowColor: '#000',
+        marginBottom: 10,
+        shadowColor: theme.colors.shadow,
         shadowOpacity: 0.1,
         shadowRadius: 5,
-        shadowOffset: { width: 0, height: 2 },
     },
     recommendationText: {
         fontSize: 16,
-        marginBottom: 10,
-        color: '#333',
+        color: theme.colors.text,
     },
     videoContainer: {
-        backgroundColor: '#4682b4',
+        backgroundColor: theme.colors.primary,
         padding: 10,
         borderRadius: 5,
+        marginTop: 10,
     },
     videoText: {
-        color: '#fff',
+        color: theme.colors.onPrimary,
         fontSize: 16,
         textAlign: 'center',
     },
@@ -260,17 +274,18 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.colors.background,
     },
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: theme.colors.background,
     },
     errorText: {
+        color: theme.colors.error,
         fontSize: 18,
-        color: '#ff6f61',
+        textAlign: 'center',
     },
 });
 
